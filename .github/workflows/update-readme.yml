@@ -52,8 +52,8 @@ jobs:
               try:
                   with open(file_path, 'r', encoding='utf-8') as f:
                       first_line = f.readline().strip()
-                      # Use regex to extract just the URL part
-                      url_match = re.search(r'Subscriptions for (http://[\w.:]+)', first_line)
+                      # Use regex to extract just the URL part - now with improved pattern
+                      url_match = re.search(r'Subscriptions for (http://[^"\s]+)', first_line)
                       if url_match:
                           server_name = url_match.group(1)
               except Exception as e:
