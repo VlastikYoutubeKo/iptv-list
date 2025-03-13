@@ -15,14 +15,23 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
         
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
           
-      - name: Update HTML with table list
+      - name: Update HTML with table list and commit changes
         run: |
+          # Configure git
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          
+          # Pull latest changes
+          git pull origin main
+          
           # Create Python script to update HTML
           cat > update_html.py << 'EOF'
           import os
@@ -101,16 +110,6 @@ jobs:
           # Run the script
           python update_html.py
           
-      - name: Commit and push if changed
-        run: |
-          git config --global user.name 'GitHub Action'
-          git config --global user.email 'action@github.com'
-          # First stash any unstaged changes
-          git stash -u || true
-          # Pull latest changes
-          git pull
-          # Apply the HTML changes
-          python update_html.py
-          # Add and commit if there are changes
+          # Add, commit and push if there are changes
           git add index.html
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update HTML table list [automated]" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update HTML table list [automated]" && git push origin main)
