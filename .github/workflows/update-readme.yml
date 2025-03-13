@@ -1,0 +1,84 @@
+name: Update README Table List
+
+on:
+  push:
+    paths:
+      - 'tables/**'
+  workflow_dispatch:
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Update README with table list
+        run: |
+          # Create Python script to update README
+          cat > update_readme.py << 'EOF'
+          import os
+          import re
+          
+          # Find all markdown files in the tables directory
+          table_files = []
+          for file in os.listdir('tables'):
+              if file.endswith('.md'):
+                  table_files.append(file)
+          
+          # Sort the files by modification time (newest first)
+          table_files.sort(key=lambda x: os.path.getmtime(os.path.join('tables', x)), reverse=True)
+          
+          # Generate the markdown table list
+          table_list = "| Filename | Last Updated |\n|---|---|\n"
+          for file in table_files:
+              file_path = os.path.join('tables', file)
+              mod_time = os.path.getmtime(file_path)
+              
+              # Format the date
+              import datetime
+              date_str = datetime.datetime.fromtimestamp(mod_time).strftime('%Y-%m-%d %H:%M:%S')
+              
+              # Try to extract server name from the first line of the file
+              server_name = "Unknown Server"
+              try:
+                  with open(file_path, 'r', encoding='utf-8') as f:
+                      first_line = f.readline().strip()
+                      if first_line.startswith('# Subscriptions for'):
+                          server_name = first_line[18:]
+              except:
+                  pass
+              
+              table_list += f"| [{file}](./tables/{file}) | {date_str} - {server_name} |\n"
+          
+          # Read the README file
+          with open('README.md', 'r', encoding='utf-8') as f:
+              readme = f.read()
+          
+          # Update the table list section
+          pattern = r'<!-- TABLE_LIST_START -->.*?<!-- TABLE_LIST_END -->'
+          replacement = f"<!-- TABLE_LIST_START -->\n{table_list}\n<!-- TABLE_LIST_END -->"
+          updated_readme = re.sub(pattern, replacement, readme, flags=re.DOTALL)
+          
+          # Write the updated README
+          with open('README.md', 'w', encoding='utf-8') as f:
+              f.write(updated_readme)
+          EOF
+          
+          # Run the script
+          python update_readme.py
+          
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          git add README.md
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update README table list [automated]" && git push)
