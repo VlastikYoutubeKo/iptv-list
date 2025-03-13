@@ -1,0 +1,94 @@
+name: Update Table Lists
+
+on:
+  push:
+    paths:
+      - 'tables/**'
+  workflow_dispatch:
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Update README with table list
+        run: |
+          python << 'EOF'
+          import os, re, datetime
+          table_files = [f for f in os.listdir('tables') if f.endswith('.md')]
+          table_files.sort(key=lambda x: os.path.getmtime(os.path.join('tables', x)), reverse=True)
+          table_list = "| Filename | Last Updated |\n|---|---|\n"
+          for file in table_files:
+              file_path = os.path.join('tables', file)
+              date_str = datetime.datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S')
+              server_name = "Unknown Server"
+              try:
+                  with open(file_path, 'r', encoding='utf-8') as f:
+                      first_line = f.readline().strip()
+                      url_match = re.search(r'Subscriptions for (http://[^"\s]+)', first_line)
+                      if url_match:
+                          server_name = url_match.group(1)
+              except:
+                  pass
+              table_list += f"| [{file}](./tables/{file}) | {date_str} - {server_name} |\n"
+          with open('README.md', 'r', encoding='utf-8') as f:
+              readme = f.read()
+          updated_readme = re.sub(r'<!-- TABLE_LIST_START -->.*?<!-- TABLE_LIST_END -->', f"<!-- TABLE_LIST_START -->\n{table_list}\n<!-- TABLE_LIST_END -->", readme, flags=re.DOTALL)
+          with open('README.md', 'w', encoding='utf-8') as f:
+              f.write(updated_readme)
+          EOF
+
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          git add README.md
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update README table list [automated]" && git push)
+
+  update-html:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Update HTML with table list and commit changes
+        run: |
+          python << 'EOF'
+          import os, re, datetime
+          table_files = [f for f in os.listdir('tables') if f.endswith('.md')]
+          table_files.sort(key=lambda x: os.path.getmtime(os.path.join('tables', x)), reverse=True)
+          table_rows = "".join(f'<tr><td><a href="./tables/{file}">{file}</a></td><td>{datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join("tables", file))).strftime("%Y-%m-%d %H:%M:%S")} - {"Unknown Server"}</td></tr>' for file in table_files)
+          if not table_rows:
+              table_rows = '<tr><td colspan="2" style="text-align: center;">No tables available yet</td></tr>'
+          with open('index.html', 'r', encoding='utf-8') as f:
+              html_content = f.read()
+          updated_html = re.sub(r'<!-- TABLE_LIST_START -->.*?<tbody>.*?</tbody>.*?<!-- TABLE_LIST_END -->', f'<!-- TABLE_LIST_START -->\n<table>\n<thead>\n<tr>\n<th>Filename</th>\n<th>Last Updated</th>\n</tr>\n</thead>\n<tbody>{table_rows}\n</tbody>\n</table>\n<!-- TABLE_LIST_END -->', html_content, flags=re.DOTALL)
+          updated_html = re.sub(r'<span id="last-updated">.*?</span>', f'<span id="last-updated">{datetime.datetime.now().strftime("%B %d, %Y")}</span>', updated_html)
+          with open('index.html', 'w', encoding='utf-8') as f:
+              f.write(updated_html)
+          EOF
+
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          git add index.html
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update HTML table list [automated]" && git push origin main)
