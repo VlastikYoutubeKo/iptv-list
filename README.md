@@ -24,7 +24,8 @@ iptv-list/
 <!-- TABLE_LIST_START -->
 | Filename | Last Updated |
 |---|---|
-| [output_jmrk_13.03.2025.md](./tables/output_jmrk_13.03.2025.md) | 2025-03-13 21:21:31 - r http://jmrk.xyz:3050 |
+| [output_jmrk_13.03.2025.md](./tables/output_jmrk_13.03.2025.md) | 2025-03-13 21:26:29 - http://jmrk.xyz:3050 |
+| [output_cord_cutter_13.03.2025.md](./tables/output_cord_cutter_13.03.2025.md) | 2025-03-13 21:26:29 - http://cord |
 
 <!-- TABLE_LIST_END -->
 
