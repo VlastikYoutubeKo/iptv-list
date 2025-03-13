@@ -22,7 +22,10 @@ iptv-list/
 ## Available Tables
 
 <!-- TABLE_LIST_START -->
-<!-- This section is automatically updated by GitHub Actions -->
+| Filename | Last Updated |
+|---|---|
+| [output_jmrk_13.03.2025.md](./tables/output_jmrk_13.03.2025.md) | 2025-03-13 21:21:31 - r http://jmrk.xyz:3050 |
+
 <!-- TABLE_LIST_END -->
 
 ## Example Table
