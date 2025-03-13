@@ -1,4 +1,4 @@
-# IPTV Subscriptions
+# Subscriptions for http://megaott.live:8080
 
 | ID | Hash | Server | Username | Created | Expires |
 |---|---|---|---|---|---|
