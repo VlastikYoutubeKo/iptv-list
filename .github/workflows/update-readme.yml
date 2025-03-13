@@ -52,9 +52,12 @@ jobs:
               try:
                   with open(file_path, 'r', encoding='utf-8') as f:
                       first_line = f.readline().strip()
-                      if first_line.startswith('# Subscriptions for'):
-                          server_name = first_line[18:]
-              except:
+                      # Use regex to extract just the URL part
+                      url_match = re.search(r'Subscriptions for (http://[\w.:]+)', first_line)
+                      if url_match:
+                          server_name = url_match.group(1)
+              except Exception as e:
+                  print(f"Error processing {file}: {e}")
                   pass
               
               table_list += f"| [{file}](./tables/{file}) | {date_str} - {server_name} |\n"
