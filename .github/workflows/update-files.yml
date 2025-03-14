@@ -1,78 +1,95 @@
-name: Update Table Lists
+name: Generate and Deploy Tables
 
 on:
   push:
-    paths:
-      - 'tables/**'
+    branches:
+      - main
   workflow_dispatch:
 
+env:
+  OUTPUT_DIR: "tables/html/"
+
 jobs:
-  update-files:
+  generate-html:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.x'
 
-      - name: Update README and HTML with table list
+      - name: Install dependencies
+        run: pip install markdown
+
+      - name: Run script to generate HTML tables
         run: |
           python << 'EOF'
-          import os, re, datetime
-          
+          import os, re, datetime, markdown
+
           table_files = [f for f in os.listdir('tables') if f.endswith('.md')]
           table_files.sort(key=lambda x: os.path.getmtime(os.path.join('tables', x)), reverse=True)
-          
-          table_list = "| Filename | Last Updated |\n|---|---|\n"
-          table_rows = ""
-          
+
+          table_list_md = "| Filename | Last Updated |\n|---|---|\n"
+          table_list_html = "<table><thead><tr><th>Filename</th><th>Last Updated</th></tr></thead><tbody>"
+
           for file in table_files:
               file_path = os.path.join('tables', file)
               date_str = datetime.datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S')
-              server_name = "Unknown Server"
+              file_html = file.replace('.md', '.html')
               
-              try:
-                  with open(file_path, 'r', encoding='utf-8') as f:
-                      first_line = f.readline().strip()
-                      url_match = re.search(r'Subscriptions for (http://[^"\s]+)', first_line)
-                      if url_match:
-                          server_name = url_match.group(1)
-              except:
-                  pass
+              with open(file_path, 'r', encoding='utf-8') as f:
+                  content = f.read()
+                  html_content = markdown.markdown(content)
+                  os.makedirs('tables/html', exist_ok=True)
+                  with open(f'tables/html/{file_html}', 'w', encoding='utf-8') as hf:
+                      hf.write(f'<html><body>{html_content}</body></html>')
               
-              table_list += f"| [{file}](./tables/{file}) | {date_str} - {server_name} |\n"
-              table_rows += f'<tr><td><a href="./tables/{file}">{file}</a></td><td>{date_str} - {server_name}</td></tr>'
-          
-          if not table_rows:
-              table_rows = '<tr><td colspan="2" style="text-align: center;">No tables available yet</td></tr>'
-          
+              table_list_md += f"| [{file}](./tables/{file}) | {date_str} |\n"
+              table_list_html += f'<tr><td><a href="./tables/html/{file_html}">{file_html}</a></td><td>{date_str}</td></tr>'
+
+          table_list_html += "</tbody></table>"
+
           with open('README.md', 'r', encoding='utf-8') as f:
               readme = f.read()
-          updated_readme = re.sub(r'<!-- TABLE_LIST_START -->.*?<!-- TABLE_LIST_END -->', f"<!-- TABLE_LIST_START -->\n{table_list}\n<!-- TABLE_LIST_END -->", readme, flags=re.DOTALL)
-          
+          updated_readme = re.sub(r'<!-- TABLE_LIST_START -->.*?<!-- TABLE_LIST_END -->', f"<!-- TABLE_LIST_START -->\n{table_list_md}\n<!-- TABLE_LIST_END -->", readme, flags=re.DOTALL)
           with open('README.md', 'w', encoding='utf-8') as f:
               f.write(updated_readme)
-          
+
           with open('index.html', 'r', encoding='utf-8') as f:
               html_content = f.read()
-          
-          updated_html = re.sub(r'<!-- TABLE_LIST_START -->.*?<tbody>.*?</tbody>.*?<!-- TABLE_LIST_END -->', f'<!-- TABLE_LIST_START -->\n<table>\n<thead>\n<tr>\n<th>Filename</th>\n<th>Last Updated</th>\n</tr>\n</thead>\n<tbody>{table_rows}\n</tbody>\n</table>\n<!-- TABLE_LIST_END -->', html_content, flags=re.DOTALL)
-          updated_html = re.sub(r'<span id="last-updated">.*?</span>', f'<span id="last-updated">{datetime.datetime.now().strftime("%B %d, %Y")}</span>', updated_html)
-          
+          updated_html = re.sub(r'<!-- TABLE_LIST_START -->.*?<!-- TABLE_LIST_END -->', f'<!-- TABLE_LIST_START -->\n{table_list_html}\n<!-- TABLE_LIST_END -->', html_content, flags=re.DOTALL)
           with open('index.html', 'w', encoding='utf-8') as f:
               f.write(updated_html)
           EOF
 
-      - name: Commit and push if changed
+      - name: Commit and push updates
         run: |
           git config --global user.name 'GitHub Action'
           git config --global user.email 'action@github.com'
-          git add README.md index.html
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update README and HTML table lists [automated]" && git push origin main)
+          git add README.md index.html tables/html/
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update tables and index [automated]" && git push origin main)
+
+  deploy-pages:
+    needs: generate-html
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v2
