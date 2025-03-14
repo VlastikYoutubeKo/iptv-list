@@ -1,74 +1,126 @@
 name: Generate and Deploy Tables
-
 on:
   push:
     branches:
       - main
   workflow_dispatch:
-
-env:
-  OUTPUT_DIR: "tables/html/"
-
 jobs:
   generate-html:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-
       - name: Install dependencies
         run: pip install markdown
-
       - name: Run script to generate HTML tables
         run: |
           python << 'EOF'
           import os, re, datetime, markdown
-
+          
+          # Get all markdown files and sort them by modification time
           table_files = [f for f in os.listdir('tables') if f.endswith('.md')]
           table_files.sort(key=lambda x: os.path.getmtime(os.path.join('tables', x)), reverse=True)
-
+          
+          # Create html directory if it doesn't exist
+          os.makedirs('tables/html', exist_ok=True)
+          
+          # Initialize table lists for README and index.html
           table_list_md = "| Filename | Last Updated |\n|---|---|\n"
           table_list_html = "<table><thead><tr><th>Filename</th><th>Last Updated</th></tr></thead><tbody>"
-
+          
+          # Process each markdown file
           for file in table_files:
               file_path = os.path.join('tables', file)
               date_str = datetime.datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S')
               file_html = file.replace('.md', '.html')
+              file_basename = file.replace('.md', '')
               
-              with open(file_path, 'r', encoding='utf-8') as f:
-                  content = f.read()
-                  html_content = markdown.markdown(content)
-                  os.makedirs('tables/html', exist_ok=True)
-                  with open(f'tables/html/{file_html}', 'w', encoding='utf-8') as hf:
-                      hf.write(f'<html><body>{html_content}</body></html>')
-              
+              # Add to table lists
               table_list_md += f"| [{file}](./tables/{file}) | {date_str} |\n"
-              table_list_html += f'<tr><td><a href="./tables/html/{file_html}">{file_html}</a></td><td>{date_str}</td></tr>'
-
+              table_list_html += f'<tr><td><a href="./tables/html/{file_html}">{file_basename}</a></td><td>{date_str}</td></tr>'
+              
+              # Read markdown content
+              with open(file_path, 'r', encoding='utf-8') as f:
+                  markdown_content = f.read()
+              
+              # Convert to HTML with tables extension explicitly enabled
+              html_content = markdown.markdown(
+                  markdown_content,
+                  extensions=['tables']
+              )
+              
+              # Create a complete HTML document with proper table styling
+              complete_html = f"""<!DOCTYPE html>
+              <html>
+              <head>
+                  <meta charset="utf-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>{file_basename}</title>
+                  <style>
+                      body {{
+                          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                          padding: 20px;
+                          max-width: 1200px;
+                          margin: 0 auto;
+                          line-height: 1.6;
+                      }}
+                      table {{
+                          border-collapse: collapse;
+                          width: 100%;
+                          margin: 20px 0;
+                          font-size: 14px;
+                      }}
+                      th, td {{
+                          border: 1px solid #ddd;
+                          padding: 8px;
+                          text-align: left;
+                      }}
+                      th {{
+                          background-color: #f2f2f2;
+                          font-weight: bold;
+                      }}
+                      tr:nth-child(even) {{
+                          background-color: #f8f8f8;
+                      }}
+                      tr:hover {{
+                          background-color: #e9e9e9;
+                      }}
+                  </style>
+              </head>
+              <body>
+                  <h1>{file_basename.replace('_', ' ').title()}</h1>
+                  {html_content}
+              </body>
+              </html>"""
+              
+              # Write the HTML file
+              with open(f'tables/html/{file_html}', 'w', encoding='utf-8') as f:
+                  f.write(complete_html)
+          
+          # Finalize the HTML table list
           table_list_html += "</tbody></table>"
-
+          
+          # Update README.md
           with open('README.md', 'r', encoding='utf-8') as f:
               readme = f.read()
           updated_readme = re.sub(r'<!-- TABLE_LIST_START -->.*?<!-- TABLE_LIST_END -->', f"<!-- TABLE_LIST_START -->\n{table_list_md}\n<!-- TABLE_LIST_END -->", readme, flags=re.DOTALL)
           with open('README.md', 'w', encoding='utf-8') as f:
               f.write(updated_readme)
-
+          
+          # Update index.html
           with open('index.html', 'r', encoding='utf-8') as f:
               html_content = f.read()
           updated_html = re.sub(r'<!-- TABLE_LIST_START -->.*?<!-- TABLE_LIST_END -->', f'<!-- TABLE_LIST_START -->\n{table_list_html}\n<!-- TABLE_LIST_END -->', html_content, flags=re.DOTALL)
           with open('index.html', 'w', encoding='utf-8') as f:
               f.write(updated_html)
           EOF
-
       - name: Commit and push updates
         run: |
           git config --global user.name 'GitHub Action'
           git config --global user.email 'action@github.com'
           git add README.md index.html tables/html/
           git diff --quiet && git diff --staged --quiet || (git commit -m "Update tables and index [automated]" && git push origin main)
-        uses: actions/deploy-pages@v2
