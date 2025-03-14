@@ -24,14 +24,14 @@ iptv-list/
 <!-- TABLE_LIST_START -->
 | Filename | Last Updated |
 |---|---|
-| [output_tvset.md](./tables/output_tvset.md) | 2025-03-13 21:58:47 - http://xc.tvset.top |
-| [output_some_ip3.md](./tables/output_some_ip3.md) | 2025-03-13 21:58:47 - http://78.159.119.122:2082 |
-| [output_jmrk_13.03.2025.md](./tables/output_jmrk_13.03.2025.md) | 2025-03-13 21:58:47 - http://jmrk.xyz:3050 |
-| [output_some_ip1.md](./tables/output_some_ip1.md) | 2025-03-13 21:58:47 - http://103.161.34.243:8080 |
-| [output_xxip9.md](./tables/output_xxip9.md) | 2025-03-13 21:58:47 - http://xxip9.top:8080 |
-| [output_megaott.md](./tables/output_megaott.md) | 2025-03-13 21:58:47 - http://megaott.live:8080 |
-| [output_some_ip2.md](./tables/output_some_ip2.md) | 2025-03-13 21:58:47 - http://45.148.147.163:8080 |
-| [output_cord_cutter_13.03.2025.md](./tables/output_cord_cutter_13.03.2025.md) | 2025-03-13 21:58:47 - http://cord-cutter.net:8080 |
+| [output_tvset.md](./tables/output_tvset.md) | 2025-03-14 13:45:47 |
+| [output_cord_cutter_13.03.2025.md](./tables/output_cord_cutter_13.03.2025.md) | 2025-03-14 13:45:47 |
+| [output_some_ip3.md](./tables/output_some_ip3.md) | 2025-03-14 13:45:47 |
+| [output_jmrk_13.03.2025.md](./tables/output_jmrk_13.03.2025.md) | 2025-03-14 13:45:47 |
+| [output_some_ip1.md](./tables/output_some_ip1.md) | 2025-03-14 13:45:47 |
+| [output_xxip9.md](./tables/output_xxip9.md) | 2025-03-14 13:45:47 |
+| [output_megaott.md](./tables/output_megaott.md) | 2025-03-14 13:45:47 |
+| [output_some_ip2.md](./tables/output_some_ip2.md) | 2025-03-14 13:45:47 |
 
 <!-- TABLE_LIST_END -->
 
