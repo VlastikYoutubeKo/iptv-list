@@ -71,25 +71,4 @@ jobs:
           git config --global user.email 'action@github.com'
           git add README.md index.html tables/html/
           git diff --quiet && git diff --staged --quiet || (git commit -m "Update tables and index [automated]" && git push origin main)
-
-  deploy-pages:
-    needs: generate-html
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v2
-        with:
-          path: .
-
-      - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v2
