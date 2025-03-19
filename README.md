@@ -24,14 +24,18 @@ iptv-list/
 <!-- TABLE_LIST_START -->
 | Filename | Last Updated |
 |---|---|
-| [output_tvset.md](./tables/output_tvset.md) | 2025-03-14 14:11:06 |
-| [output_cord_cutter_13.03.2025.md](./tables/output_cord_cutter_13.03.2025.md) | 2025-03-14 14:11:06 |
-| [output_some_ip3.md](./tables/output_some_ip3.md) | 2025-03-14 14:11:06 |
-| [output_jmrk_13.03.2025.md](./tables/output_jmrk_13.03.2025.md) | 2025-03-14 14:11:06 |
-| [output_some_ip1.md](./tables/output_some_ip1.md) | 2025-03-14 14:11:06 |
-| [output_xxip9.md](./tables/output_xxip9.md) | 2025-03-14 14:11:06 |
-| [output_megaott.md](./tables/output_megaott.md) | 2025-03-14 14:11:06 |
-| [output_some_ip2.md](./tables/output_some_ip2.md) | 2025-03-14 14:11:06 |
+| [output_tvset.md](./tables/output_tvset.md) | 2025-03-19 11:57:15 |
+| [output_some_ip3.md](./tables/output_some_ip3.md) | 2025-03-19 11:57:15 |
+| [output_xxip9.md](./tables/output_xxip9.md) | 2025-03-19 11:57:15 |
+| [output_xtream_ie.md](./tables/output_xtream_ie.md) | 2025-03-19 11:57:15 |
+| [output_cord_cutter_13.03.2025.md](./tables/output_cord_cutter_13.03.2025.md) | 2025-03-19 11:57:15 |
+| [output_jmrk_13.03.2025.md](./tables/output_jmrk_13.03.2025.md) | 2025-03-19 11:57:15 |
+| [output_defaultgen.md](./tables/output_defaultgen.md) | 2025-03-19 11:57:15 |
+| [output_some_ip1.md](./tables/output_some_ip1.md) | 2025-03-19 11:57:15 |
+| [output_monstertv.md](./tables/output_monstertv.md) | 2025-03-19 11:57:15 |
+| [output_megaott.md](./tables/output_megaott.md) | 2025-03-19 11:57:15 |
+| [output_some_ip2.md](./tables/output_some_ip2.md) | 2025-03-19 11:57:15 |
+| [output_sky_capedown.md](./tables/output_sky_capedown.md) | 2025-03-19 11:57:15 |
 
 <!-- TABLE_LIST_END -->
 
